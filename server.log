@@ -1,0 +1,9 @@
+
+> webserver@1.0.0 dev
+> npx tsc && node dist/index.js
+
+Server is running at http://localhost:8080
+NaN
+0
+1
+[NON-OK] GET /metric/ - Status: 404
