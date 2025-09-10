@@ -45,7 +45,7 @@ export function resetFileServerHits(req: Request, res: Response){
   res.send("Did a hard reset on the counter! ")
 }
 
-export function validate_chirp(req: Request, res: Response){
+export function validate_chirp_manually(req: Request, res: Response){
   type expectedBody = {
     body : string
   }
@@ -75,5 +75,57 @@ export function validate_chirp(req: Request, res: Response){
         valid : true
       })
       
+  })
+}
+
+export function validate_chirp(req: Request, res:Response, next:NextFunction){
+  const text = req.body?.body ;
+  if(typeof text !== "string"){
+    res.status(400).json({
+      error: "Invalid JSON"
+    })
+    return 
+  }
+  if(text.length > 140){
+    
+    // res.status(400).json({
+    //   error : "Chirp is too long"
+    // })
+  // try{
+  //   throw new Error("Chirp is too long")
+  //   }catch(err){
+  //     next(err)
+  //   }   // only try/catch in async code 
+    return next(new Error("Chirp is too long"))
+  }
+  // res.status(200).json({
+  //   valid: true
+  // })
+
+  const forbidden = new Set(["kerfuffle", "sharbert", "fornax"]); 
+
+  let words = text.split(" ");
+  let filter: string[] = []
+  words.map((word)=>{
+
+    if(forbidden.has(word.toLowerCase())){
+      filter.push("****");  
+    }
+    else{
+      filter.push(word)
+    }
+
+  })
+  res.status(200).json({
+    cleanedBody : filter.join(" ")
+  })
+}
+
+export function errorHandler(err:Error,
+  req: Request, res: Response, next: NextFunction
+){
+  console.log(err.message);
+  res.status(500).json({
+    error : "Something went wrong on our end"
   })
 }

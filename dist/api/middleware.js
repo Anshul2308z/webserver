@@ -35,18 +35,7 @@ export function resetFileServerHits(req, res) {
     console.log(config.fileServerHits);
     res.send("Did a hard reset on the counter! ");
 }
-export function handler(req, res, next) {
-    let body = ""; // initialization 
-    req.on("data", () => {
-        try {
-            const parsedBody = JSON.parse(body);
-        }
-        catch (err) {
-            res.status(400).send("Invalid JSON");
-        }
-    });
-}
-export function validate_chirp(req, res) {
+export function validate_chirp_manually(req, res) {
     let body = "";
     let parsedBody = null;
     req.on("data", (chunk) => {
@@ -71,5 +60,49 @@ export function validate_chirp(req, res) {
         res.status(200).json({
             valid: true
         });
+    });
+}
+export function validate_chirp(req, res, next) {
+    const text = req.body?.body;
+    if (typeof text !== "string") {
+        res.status(400).json({
+            error: "Invalid JSON"
+        });
+        return;
+    }
+    if (text.length > 140) {
+        // res.status(400).json({
+        //   error : "Chirp is too long"
+        // })
+        try {
+            throw new Error("Chirp is too long");
+        }
+        catch (err) {
+            next(err);
+        }
+        return;
+    }
+    // res.status(200).json({
+    //   valid: true
+    // })
+    const forbidden = new Set(["kerfuffle", "sharbert", "fornax"]);
+    let words = text.split(" ");
+    let filter = [];
+    words.map((word) => {
+        if (forbidden.has(word.toLowerCase())) {
+            filter.push("****");
+        }
+        else {
+            filter.push(word);
+        }
+    });
+    res.status(200).json({
+        cleanedBody: filter.join(" ")
+    });
+}
+export function errorHandler(err, req, res, next) {
+    console.log(err.message);
+    res.status(500).json({
+        error: "Something went wrong on our end"
     });
 }
