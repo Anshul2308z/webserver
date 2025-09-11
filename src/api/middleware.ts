@@ -96,7 +96,7 @@ export function validate_chirp(req: Request, res:Response, next:NextFunction){
   //   }catch(err){
   //     next(err)
   //   }   // only try/catch in async code 
-    return next(new Error("Chirp is too long"))
+    return next(new BadRequestError("Chirp is too long. Max length is 140"))
   }
   // res.status(200).json({
   //   valid: true
@@ -121,11 +121,56 @@ export function validate_chirp(req: Request, res:Response, next:NextFunction){
   })
 }
 
+class NotFoundError extends Error{
+  constructor(message: string){
+    super(message)
+  }
+}
+
+class BadRequestError extends Error{
+  constructor(message: string){
+    super(message)
+  }
+}
+
+class UnauthorizedError extends Error{
+  constructor(message: string){
+    super(message)
+  }
+}
+
+class ForbiddenError extends Error{
+  constructor(message: string){
+    super(message)
+  }
+}
+
+
 export function errorHandler(err:Error,
   req: Request, res: Response, next: NextFunction
 ){
+  let statusCodeHere: number= 0 ;
+  res.on("finish",()=>{
+    statusCodeHere=res.statusCode 
+  })
+  if(err instanceof NotFoundError){
+    res.status(400).json({
+      error : err.message
+    })
+  }
+  if(err instanceof UnauthorizedError){
+    res.status(400).json({
+      error : err.message
+    })
+  }
+  if(err instanceof BadRequestError){
+    res.status(400).json({
+      error : err.message
+    })
+  }
   console.log(err.message);
   res.status(500).json({
     error : "Something went wrong on our end"
   })
 }
+
